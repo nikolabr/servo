@@ -1,6 +1,6 @@
 #include "servo.h"
 
-#define DEFINE_TIMER_VALS(a, b) static const uint16_t timer_vals[2] = {a, b - a};
+#define DEFINE_TIMER_VALS(a, b) static uint16_t timer_vals[2] = {a, b - a};
 
 DEFINE_TIMER_VALS(1250, 5000)
 Servo servo; 
@@ -42,12 +42,16 @@ ISR(TIMER1_COMPA_vect)
   servo_write(&servo, tmp);
   tmp = !tmp;
   cli();
-  //TIMSK0 |= (1 << OCIE0A);
   OCR1A = timer_vals[tmp];
   sei();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // OCR1B =  analogRead(0);    // read the value from the sensor
+//  uint16_t tmp = analogRead(0);    // read the value from the sensor
+//  tmp >>= 2;
+//  tmp |= (1 << 9); // + 256
+  timer_vals[0] = (analogRead(0) >> 2) + 250; // Bit black magic
+  timer_vals[1] = 5000 - timer_vals[0];
+  
 }
