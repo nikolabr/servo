@@ -1,7 +1,10 @@
 #include "servo.h"
 
-Servo servo; 
+#define DEFINE_TIMER_VALS(a, b) static const uint16_t timer_vals[2] = {a, b - a};
 
+DEFINE_TIMER_VALS(1250, 5000)
+Servo servo; 
+uint8_t tmp = 1;
 void setup() {
     
   // put your setup code here, to run once:
@@ -20,12 +23,6 @@ void setup() {
   // set compare match register for 1hz increments
   // OCR1A = 16*10^6 / (frequency * prescaler) - 1 (result must be <65536)
 
-  // 50Hz 
-  OCR1A = 5000;  
-
-  // 250kHz
-  OCR1B = 128;
-
   // turn on CTC mode - timer counter resets to 0
   TCCR1B |= (1 << WGM12);
 
@@ -42,26 +39,15 @@ void setup() {
 
 ISR(TIMER1_COMPA_vect)
 {
-  servo_write(&servo, 1);
-  uint8_t sreg = SREG;
+  servo_write(&servo, tmp);
+  tmp = !tmp;
   cli();
-  TIMSK1 |= (1 << OCIE1B);
+  //TIMSK0 |= (1 << OCIE0A);
+  OCR1A = timer_vals[tmp];
   sei();
-  SREG = sreg;
-}
-
-ISR(TIMER1_COMPB_vect)
-{
-  servo_write(&servo, 0);
-  uint8_t sreg = SREG;
-  cli();
-  TIMSK1 &= ~(1 << OCIE1B);
-  sei();
-  SREG = sreg;
-
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  OCR1B =  analogRead(0);    // read the value from the sensor
+  // OCR1B =  analogRead(0);    // read the value from the sensor
 }
