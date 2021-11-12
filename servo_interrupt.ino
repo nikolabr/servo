@@ -2,7 +2,7 @@
 
 #define DEFINE_TIMER_VALS(a, b) static uint16_t timer_vals[2] = {a, b - a};
 
-DEFINE_TIMER_VALS(1250, 5000)
+DEFINE_TIMER_VALS(250, 1000)
 Servo servo; 
 uint8_t tmp = 1;
 void setup() {
@@ -52,6 +52,6 @@ void loop() {
 //  tmp >>= 2;
 //  tmp |= (1 << 9); // + 256
   timer_vals[0] = (analogRead(0) >> 2) + 250; // Bit black magic
-  timer_vals[1] = 5000 - timer_vals[0];
+  timer_vals[1] = 1000 - timer_vals[0];
   
 }
