@@ -1,15 +1,27 @@
 #include "servo.h"
+#define SERVO_CNT 2
 
-#define DEFINE_TIMER_VALS(a, b) static uint16_t timer_vals[2] = {a, b - a};
+static uint16_t timer_vals[SERVO_CNT * 2];
 
-DEFINE_TIMER_VALS(250, 8000)
-Servo servo; 
+#define SET_TIMER_VALS(n, a, b) timer_vals[2 * n] = a; timer_vals[2 * n + 1] = b - a;
+
+Servo servos[SERVO_CNT];
+Servo * cur_servo; 
+
 uint8_t tmp = 1;
+uint8_t cnt = 0;
 void setup() {
     
+  SET_TIMER_VALS(0, 1250, 6000);
+  SET_TIMER_VALS(1, 1250, 6000);
+     
   // put your setup code here, to run once:
-  servo = SERVO_DEFINE(B, 1); 
-  servo_init(&servo);
+  servos[0] = SERVO_DEFINE(B, 1); 
+  servo_init(servos);
+  cur_servo = servos;
+
+  servos[1] = SERVO_DEFINE(B, 2); 
+  servo_init(servos + 1);
 
   cli();//stop interrupts
 
@@ -39,19 +51,22 @@ void setup() {
 
 ISR(TIMER1_COMPA_vect)
 {
-  servo_write(&servo, tmp);
+  servo_write(cur_servo, tmp);
+  cnt = (cnt + 1) & 0b0011;
+  cur_servo = servos + (cnt >> 1);
   tmp = !tmp;
   cli();
-  OCR1A = timer_vals[tmp];
+  OCR1A = timer_vals[cnt];
   sei();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-//  uint16_t tmp = analogRead(0);    // read the value from the sensor
-//  tmp >>= 2;
-//  tmp |= (1 << 9); // + 256
   timer_vals[0] = (analogRead(0) << 1) | (1 << 11); // Bit black magic
-  timer_vals[1] = 8000 - timer_vals[0];
+  timer_vals[1] = 6000 - timer_vals[0];
+
+  timer_vals[2] = (analogRead(1) << 1) | (1 << 11); // Bit black magic
+  timer_vals[3] = 6000 - timer_vals[2];
+
+  Serial.println((double)0xF561131 / cnt);
   
 }
