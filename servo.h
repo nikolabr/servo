@@ -6,9 +6,9 @@
 #include <Arduino.h>
 
 typedef struct {
-  volatile uint8_t * ddr_port;
-  volatile uint8_t * port;
-  uint8_t pin;
+	volatile uint8_t * ddr_port;
+	volatile uint8_t * port;
+	uint8_t pin;
 } Servo;
 
 void servo_init(Servo * servo);
